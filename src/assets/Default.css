@@ -1,0 +1,32 @@
+#hihi {
+  background-image: url(./images/hero1.jpg);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.home-page-card {
+  overflow: hidden;
+}
+.home-page-card:hover img {
+  transform: scale(1.2);
+}
+.text-shadow {
+  text-shadow: -6px 1px 6px #000;
+}
+
+.custom-box-shadow {
+  box-shadow: 1px 1px 4px 0px #000;
+}
+.custom2-box-shadow{
+  box-shadow: -4px 0px 4px 0px #9c9c9c;
+
+}
+.hovered-actions {
+  opacity: 0;
+  transition: 0.5s;
+}
+.hoverer-actions:hover .hovered-actions {
+  opacity: 10;
+}
+
+
