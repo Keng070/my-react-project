@@ -10,6 +10,7 @@ const Register = () => {
       [e.target.name]: e.target.value
     })
   }
+ console.log("hihi")
   console.log(formData)
   return (
     <div className="ma-w-[1640px] flex items-center justify-center m-auto h-[100vh] bg-[url(https://images.unsplash.com/photo-1556905055-8f358a7a47b2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80)] bg-center bg-cover bg-no-repeat">
