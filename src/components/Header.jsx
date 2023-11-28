@@ -81,7 +81,6 @@ const Header = () => {
         setLoading(false);
       }
       const data = await res.json();
-      console.log(data.avatar);
       if (data) {
         // successPopUp("");
         setUserData(data);
@@ -96,9 +95,14 @@ const Header = () => {
   const handleInputBlur = () => {
     setIsInputFocused(false);
   };
+
   useEffect(() => {
-    getUserProfile();
-  }, []);
+    if (!token) {
+      ("");
+    } else {
+      getUserProfile();
+    }
+  }, [token]);
   return (
     <div className="  bg-white w-full mx-auto  justify-between lg:justify-around fixed top-0 z-30 flex  p-2 lg:p-2 shadow-md">
       {loading ? <Loading /> : ""}
@@ -249,8 +253,11 @@ const Header = () => {
       </div>
       {/* Right side */}
       <div className="flex">
-        {userData ? (
-          <div className="w-[50px] h-full">
+        {userData && userData.avatar ? (
+          <div
+            onClick={() => navigate("/profile")}
+            className="w-[50px] h-[50px] rounded-full overflow-hidden md:flex lg:flex hidden "
+          >
             <img
               className="w-full h-full object-cover"
               src={userData.avatar}
@@ -260,7 +267,7 @@ const Header = () => {
         ) : (
           <div
             onClick={() => navigate("/login")}
-            className="hidden md:flex mx-5 text-custom-blue hover:text-orange-600 flex-col items-center cursor-pointer"
+            className="hidden md:flex lg:flex mx-5 text-custom-blue hover:text-orange-600 flex-col items-center cursor-pointer"
           >
             <RiAccountCircleLine size={30} />
             <span className="font-bold">Login</span>
@@ -395,18 +402,38 @@ const Header = () => {
         />
 
         {/* Profile */}
-        <div className="p-9 mb-4">
-          <div className="h-[70px] w-[70px]">
-            <img
-              className="object-cover w-full h-full mb-3"
-              src="https://i.pinimg.com/736x/61/f7/5e/61f75ea9a680def2ed1c6929fe75aeee.jpg"
-              alt=""
-            />
-
-            <button className="bg-custom-blue text-white p-[5px] px-4 duration-300 rounded-full hover:bg-orange-600 ">
+        <div className="p-9 ">
+          <div className="w-[70px] h-[70px] mb-2 rounded-full overflow-hidden ">
+            {userData && userData.avatar ? (
+              <img
+                onClick={() => navigate("/profile")}
+                className="object-cover cursor-pointer  w-full h-full mb-4"
+                src={userData.avatar}
+                alt=""
+              />
+            ) : (
+              <img
+                className="object-cover  w-full h-full mb-4"
+                src="https://i.pinimg.com/736x/61/f7/5e/61f75ea9a680def2ed1c6929fe75aeee.jpg"
+                alt=""
+              />
+            )}
+          </div>
+          {userData && userData.username ? (
+            <p
+              onClick={() => navigate("/profile")}
+              className=" p-[5px] cursor-pointer duration-300 text-black text-2xl "
+            >
+              {userData.username}
+            </p>
+          ) : (
+            <button
+              onClick={() => navigate("/login")}
+              className="bg-custom-blue text-white p-[5px] px-4 duration-300 rounded-full hover:bg-orange-600 "
+            >
               Login
             </button>
-          </div>
+          )}
         </div>
         <nav>
           <ul className="flex flex-col p-4 cursor-pointer  text-gray-800 ">
