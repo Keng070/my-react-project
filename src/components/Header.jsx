@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   RiAccountCircleLine,
   RiCheckboxCircleLine,
@@ -22,22 +22,98 @@ import { GrUser, GrUserFemale } from "react-icons/gr";
 import myImages from "../assets/images/weblogo.png";
 import { Link } from "react-router-dom";
 import { FaChevronRight } from "react-icons/fa6";
-import {useNavigate} from 'react-router-dom'
+import { useNavigate } from "react-router-dom";
+import Loading from "../components/Loading";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const Header = () => {
   const [nav, setNav] = useState(false);
   const [mobileSearch, setMobileSearch] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [openCart, setOpenCart] = useState(false);
-const navigate =useNavigate()
+  const [userData, setUserData] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const api = import.meta.env.VITE_API_URL;
+  const token = localStorage.getItem("user");
+
+  const navigate = useNavigate();
   const handleInputFocus = () => {
     setIsInputFocused(true);
   };
+  const successPopUp = (reason) => {
+    toast.success(`${reason}`, {
+      position: "top-left",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+  };
+  const wariningPopUp = (reason) => {
+    toast.warn(`${reason}`, {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+  };
 
+  const getUserProfile = async () => {
+    try {
+      const res = await fetch(`${api}/api/users/profile`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        setLoading(false);
+        // Replace "/success" with the desired URL
+      } else {
+        setLoading(false);
+      }
+      const data = await res.json();
+      console.log(data.avatar);
+      if (data) {
+        // successPopUp("");
+        setUserData(data);
+      } else {
+        wariningPopUp(data.error);
+      }
+    } catch (error) {
+      setLoading(false);
+      console.log(error);
+    }
+  };
   const handleInputBlur = () => {
     setIsInputFocused(false);
   };
+  useEffect(() => {
+    getUserProfile();
+  }, []);
   return (
     <div className="  bg-white w-full mx-auto  justify-between lg:justify-around fixed top-0 z-30 flex  p-2 lg:p-2 shadow-md">
+      {loading ? <Loading /> : ""}
+      <ToastContainer
+        position="top-left"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       {/* Left side */}
       <div className="flex items-center ">
         <div
@@ -172,12 +248,24 @@ const navigate =useNavigate()
         />
       </div>
       {/* Right side */}
-      {/* Account */}
       <div className="flex">
-        <div onClick={()=>navigate('/login')} className="hidden md:flex mx-5 text-custom-blue hover:text-orange-600 flex-col items-center cursor-pointer">
-          <RiAccountCircleLine size={30} />
-          <span className="font-bold">Login</span>
-        </div>
+        {userData ? (
+          <div className="w-[50px] h-full">
+            <img
+              className="w-full h-full object-cover"
+              src={userData.avatar}
+              alt=""
+            />
+          </div>
+        ) : (
+          <div
+            onClick={() => navigate("/login")}
+            className="hidden md:flex mx-5 text-custom-blue hover:text-orange-600 flex-col items-center cursor-pointer"
+          >
+            <RiAccountCircleLine size={30} />
+            <span className="font-bold">Login</span>
+          </div>
+        )}
         {/* Favorite */}
         <div className="flex-col hidden md:flex text-custom-blue hover:text-orange-600 mx-5 items-center cursor-pointer">
           <RiHeartLine size={30} />
@@ -268,7 +356,10 @@ const navigate =useNavigate()
               </div>
 
               {/* Buttons */}
-              <button onClick={()=>navigate('/cart-items')} className="w-full text-[17px] hover:bg-custom-blue duration-500 hover:text-white p-2 mb-2 border-2 text-custom-blue border-custom-blue rounded-[15px]">
+              <button
+                onClick={() => navigate("/cart-items")}
+                className="w-full text-[17px] hover:bg-custom-blue duration-500 hover:text-white p-2 mb-2 border-2 text-custom-blue border-custom-blue rounded-[15px]"
+              >
                 VIEW ALL
               </button>
               <button className="wifull text-[17px] duration-500 p-2 hover:bg-white hover:text-orange-600 hover:border-orange-600 border-2 bg-orange-600 w-full rounded-[15px] text-white">
