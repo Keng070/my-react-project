@@ -4,12 +4,15 @@ import { FaChevronRight, FaPersonChalkboard } from "react-icons/fa6";
 import { RiSecurePaymentLine } from "react-icons/ri";
 import { FaShopify } from "react-icons/fa";
 import News from "../components/News";
-import {useNavigate} from 'react-router-dom'
+import { useNavigate } from "react-router-dom";
+import Loading from "../components/Loading";
 
 export const Home = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   return (
     <div>
+      {/* <Loading/> */}
+
       <Hero />
       {/* Head line card */}
       <div className="max-w-[1640px] lg:py-16 md:py-16 py-5 m-auto md:px-12 lg:px-12  flex flex-wrap items-center justify-center">
@@ -63,7 +66,10 @@ export const Home = () => {
         </div>
 
         {/* More */}
-        <div onClick={()=>navigate('/products')} className="text-[20px] p-2 border-custom-blue  duration-300 px-4 hover:bg-custom-blue hover:text-white border-[1px] rounded-full flex cursor-pointer items-center justify-center text-custom-blue font-bold">
+        <div
+          onClick={() => navigate("/products")}
+          className="text-[20px] p-2 border-custom-blue  duration-300 px-4 hover:bg-custom-blue hover:text-white border-[1px] rounded-full flex cursor-pointer items-center justify-center text-custom-blue font-bold"
+        >
           <p className="mr-2">More</p> <FaChevronRight />
         </div>
       </div>
@@ -206,8 +212,7 @@ export const Home = () => {
       </div>
 
       {/* News */}
-      <News/>
-
+      <News />
     </div>
   );
 };
