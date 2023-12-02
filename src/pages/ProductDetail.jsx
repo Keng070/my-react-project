@@ -2,27 +2,87 @@ import { FaRegStar } from "react-icons/fa";
 import { FaCartArrowDown } from "react-icons/fa6";
 import { RiHeartLine } from "react-icons/ri";
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import News from "../components/News";
-
+import { useEffect, useState } from "react";
+import Loading from "../components/Loading";
 const ProductDetail = () => {
+  const [loading, setLoading] = useState(false);
+  const [productData, setProductData] = useState({});
+  const [relatedProducts, setRelatedProducts] = useState([]);
   const navigate = useNavigate();
+  const productId = useParams();
+  const api = import.meta.env.VITE_API_URL;
 
-  return (
+  const getTheProduct = async () => {
+    try {
+      setLoading(true);
+
+      const res = await fetch(`${api}/api/products/id/${productId.id}`, {
+        method: "GET",
+      });
+      if (res.ok) {
+        //ok
+        setLoading(false);
+      } else {
+        console.log(res);
+        setLoading(false);
+      }
+      const data = await res.json();
+      setProductData(data);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
+  };
+  const getRelatedProducts = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(
+        `${api}/api/products?brand=${productData.brand}`,
+        {
+          method: "GET",
+        }
+      );
+      if (res.ok) {
+        //ok
+        setLoading(false);
+      } else {
+        console.log(res);
+        setLoading(false);
+      }
+      const data = await res.json();
+      setRelatedProducts(data.content);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
+  };
+ 
+  useEffect(() => {
+    getRelatedProducts();
+    getTheProduct();
+    if(relatedProducts){
+      setLoading(false)
+    }
+  }, [relatedProducts]);
+   return (
     <div className="max-w-[1640px]  m-auto">
+      {loading ? <Loading /> : ""}
+
       {/* The product */}
       <div className=" md:pt-[150px] md:px-16 lg:px-16  lg:pt-[150px] pt-[50px] flex w-full flex-wrap">
         {/* image */}
         <div className="h-[400px] min-w-[400px] flex-1 mx-4">
           <img
             className="h-full w-full object-cover"
-            src="https://images.unsplash.com/photo-1506629082955-511b1aa562c8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1374&q=80"
+            src={productData.imageUrl}
             alt=""
           />
         </div>
         {/* desc */}
         <div className="flex-1 min-w-[400px] flex flex-col p-2 md:px-10 lg:px-10">
-          <p className="text-2xl font-bold mb-6">New Collection Shirt</p>
+          <p className="text-2xl font-bold mb-6">{productData.title}</p>
           <div className="flex text-orange-600 mb-6">
             <FaRegStar size={20} />
             <FaRegStar size={20} />
@@ -30,19 +90,19 @@ const ProductDetail = () => {
             <FaRegStar size={20} />
             <FaRegStar size={20} />
           </div>
-          <p className="text-[20px] mb-6">
-            Vitae, fugit maxime? Corrupti, ut qui, rem possimus facilis magni
-            sint minima voluptates praesentium architecto distinctio aliquid
-            suscipit repellat.
-          </p>
+          <p className="text-[20px] mb-6">{productData.description}</p>
           <p className="text-2xl md:text-2xl lg:text-2xl text-orange-600 mb-6">
-            $ 1000
+            $ {productData.price}
           </p>
           <select className="w-[100px] border-2 p-2 mb-4" name="" id="">
-            <option value="Sizes" disabled selected>Sizes</option>
-            <option value="XL">XL</option>
-            <option value="XL">XL</option>
-            <option value="XL">XL</option>
+            <option value="Sizes" disabled selected>
+              Sizes
+            </option>
+            {productData?.sizes?.map((item, index) => (
+              <option key={index} value={item.name}>
+                {item.name}
+              </option>
+            ))}
           </select>
           <form className="flex items-center mb-6" action="">
             <input
@@ -53,7 +113,7 @@ const ProductDetail = () => {
             <button className="text-[15px] mx-2 font-bold p-[12px] hover:bg-white duration-500 hover:text-orange-600 hover:border-2 border-orange-600 bg-orange-600 text-white">
               Add to cart
             </button>
-            <RiHeartLine className="cursor-pointer" size={30}/>
+            <RiHeartLine className="cursor-pointer" size={30} />
           </form>
           <div className="flex m">
             <p className="bg-custom-blue  mx-2 cursor-pointer text-white text-[17px] px-4 p-1 rounded-full">
@@ -77,136 +137,36 @@ const ProductDetail = () => {
 
       {/* Related products */}
       <div className="flex flex-wrap w-full p-1 md:px-12 lg:px-12">
-        <div
-          onClick={() => navigate("/product-detail")}
-          className="flex-1 hoverer-actions cursor-pointer hover:border-2 min-w-[200px] h-[450px] max-w-[300px] m-1 flex items-center  flex-col"
-        >
-          <img
-            className="h-[65%] w-full  object-cover"
-            src="https://images.unsplash.com/photo-1607345366928-199ea26cfe3e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8c2hpcnR8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60"
-            alt=""
-          />
-          <div className="flex flex-col h-[30%] w-full  items-center justify-center bg-white">
-            <p className="font-bold my-1 text-center">
-              ENGLAND 1990 BLACK-OUT SHIRT BLACK
-            </p>
-            <p className="text-orange-600 text-[20px] mb-2">$ 800</p>
-            {/* Actions */}
-            <div className="flex hovered-actions w-full items-center justify-center">
-              <button className=" cursor-pointer rounded-full bg-orange-600 hover:bg-white hover:border-orange-600 hover:border-2 duration-500 hover:text-orange-600  p-3 text-white mx-2">
-                <FaCartArrowDown size={17} />
-              </button>
-              <button className="cursor-pointer rounded-full text-[19px] text-custom-blue border-2 duration-500 hover:bg-custom-blue hover:text-white border-custom-blue p-2 py-1 mx-2">
-                View
-              </button>
-              <RiHeartLine className="mx-2 cursor-pointer " size={30} />
+        {relatedProducts.map((item, index) => (
+          <div
+            key={index}
+            onClick={() => navigate(`/product/${item._id}`)}
+            className="flex-1 hoverer-actions cursor-pointer hover:border-2 min-w-[200px] h-[450px] max-w-[300px] m-1 flex items-center  flex-col"
+          >
+            <img
+              className="h-[65%] w-full  object-cover"
+              src={item.imageUrl}
+              alt=""
+            />
+            <div className="flex flex-col h-[30%] w-full  items-center justify-center bg-white">
+              <p className="font-bold my-1 text-center">{item.title}</p>
+              <p className="text-orange-600 text-[20px] mb-2">$ {item.price}</p>
+              {/* Actions */}
+              <div className="flex hovered-actions w-full items-center justify-center">
+                <button className=" cursor-pointer rounded-full bg-orange-600 hover:bg-white hover:border-orange-600 hover:border-2 duration-500 hover:text-orange-600  p-3 text-white mx-2">
+                  <FaCartArrowDown size={17} />
+                </button>
+                <button
+                  onClick={() => navigate(`/product/${item._id}`)}
+                  className="cursor-pointer rounded-full text-[19px] text-custom-blue border-2 duration-500 hover:bg-custom-blue hover:text-white border-custom-blue p-2 py-1 mx-2"
+                >
+                  View
+                </button>
+                <RiHeartLine className="mx-2 cursor-pointer " size={30} />
+              </div>
             </div>
           </div>
-        </div>
-        <div
-          onClick={() => navigate("/product-detail")}
-          className="flex-1 hoverer-actions cursor-pointer hover:border-2 min-w-[200px] h-[450px] max-w-[300px] m-1 flex items-center  flex-col"
-        >
-          <img
-            className="h-[65%] w-full  object-cover"
-            src="https://images.unsplash.com/photo-1607345366928-199ea26cfe3e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8c2hpcnR8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60"
-            alt=""
-          />
-          <div className="flex flex-col h-[30%] w-full  items-center justify-center bg-white">
-            <p className="font-bold my-1 text-center">
-              ENGLAND 1990 BLACK-OUT SHIRT BLACK
-            </p>
-            <p className="text-orange-600 text-[20px] mb-2">$ 800</p>
-            {/* Actions */}
-            <div className="flex hovered-actions w-full items-center justify-center">
-              <button className=" cursor-pointer rounded-full bg-orange-600 hover:bg-white hover:border-orange-600 hover:border-2 duration-500 hover:text-orange-600  p-3 text-white mx-2">
-                <FaCartArrowDown size={17} />
-              </button>
-              <button className="cursor-pointer rounded-full text-[19px] text-custom-blue border-2 duration-500 hover:bg-custom-blue hover:text-white border-custom-blue p-2 py-1 mx-2">
-                View
-              </button>
-              <RiHeartLine className="mx-2 cursor-pointer " size={30} />
-            </div>
-          </div>
-        </div>{" "}
-        <div
-          onClick={() => navigate("/product-detail")}
-          className="flex-1 hoverer-actions cursor-pointer hover:border-2 min-w-[200px] h-[450px] max-w-[300px] m-1 flex items-center  flex-col"
-        >
-          <img
-            className="h-[65%] w-full  object-cover"
-            src="https://images.unsplash.com/photo-1607345366928-199ea26cfe3e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8c2hpcnR8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60"
-            alt=""
-          />
-          <div className="flex flex-col h-[30%] w-full  items-center justify-center bg-white">
-            <p className="font-bold my-1 text-center">
-              ENGLAND 1990 BLACK-OUT SHIRT BLACK
-            </p>
-            <p className="text-orange-600 text-[20px] mb-2">$ 800</p>
-            {/* Actions */}
-            <div className="flex hovered-actions w-full items-center justify-center">
-              <button className=" cursor-pointer rounded-full bg-orange-600 hover:bg-white hover:border-orange-600 hover:border-2 duration-500 hover:text-orange-600  p-3 text-white mx-2">
-                <FaCartArrowDown size={17} />
-              </button>
-              <button className="cursor-pointer rounded-full text-[19px] text-custom-blue border-2 duration-500 hover:bg-custom-blue hover:text-white border-custom-blue p-2 py-1 mx-2">
-                View
-              </button>
-              <RiHeartLine className="mx-2 cursor-pointer " size={30} />
-            </div>
-          </div>
-        </div>{" "}
-        <div
-          onClick={() => navigate("/product-detail")}
-          className="flex-1 hoverer-actions cursor-pointer hover:border-2 min-w-[200px] h-[450px] max-w-[300px] m-1 flex items-center  flex-col"
-        >
-          <img
-            className="h-[65%] w-full  object-cover"
-            src="https://images.unsplash.com/photo-1607345366928-199ea26cfe3e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8c2hpcnR8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60"
-            alt=""
-          />
-          <div className="flex flex-col h-[30%] w-full  items-center justify-center bg-white">
-            <p className="font-bold my-1 text-center">
-              ENGLAND 1990 BLACK-OUT SHIRT BLACK
-            </p>
-            <p className="text-orange-600 text-[20px] mb-2">$ 800</p>
-            {/* Actions */}
-            <div className="flex hovered-actions w-full items-center justify-center">
-              <button className=" cursor-pointer rounded-full bg-orange-600 hover:bg-white hover:border-orange-600 hover:border-2 duration-500 hover:text-orange-600  p-3 text-white mx-2">
-                <FaCartArrowDown size={17} />
-              </button>
-              <button className="cursor-pointer rounded-full text-[19px] text-custom-blue border-2 duration-500 hover:bg-custom-blue hover:text-white border-custom-blue p-2 py-1 mx-2">
-                View
-              </button>
-              <RiHeartLine className="mx-2 cursor-pointer " size={30} />
-            </div>
-          </div>
-        </div>{" "}
-        <div
-          onClick={() => navigate("/product-detail")}
-          className="flex-1 hoverer-actions cursor-pointer hover:border-2 min-w-[200px] h-[450px] max-w-[300px] m-1 flex items-center  flex-col"
-        >
-          <img
-            className="h-[65%] w-full  object-cover"
-            src="https://images.unsplash.com/photo-1607345366928-199ea26cfe3e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8c2hpcnR8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60"
-            alt=""
-          />
-          <div className="flex flex-col h-[30%] w-full  items-center justify-center bg-white">
-            <p className="font-bold my-1 text-center">
-              ENGLAND 1990 BLACK-OUT SHIRT BLACK
-            </p>
-            <p className="text-orange-600 text-[20px] mb-2">$ 800</p>
-            {/* Actions */}
-            <div className="flex hovered-actions w-full items-center justify-center">
-              <button className=" cursor-pointer rounded-full bg-orange-600 hover:bg-white hover:border-orange-600 hover:border-2 duration-500 hover:text-orange-600  p-3 text-white mx-2">
-                <FaCartArrowDown size={17} />
-              </button>
-              <button className="cursor-pointer rounded-full text-[19px] text-custom-blue border-2 duration-500 hover:bg-custom-blue hover:text-white border-custom-blue p-2 py-1 mx-2">
-                View
-              </button>
-              <RiHeartLine className="mx-2 cursor-pointer " size={30} />
-            </div>
-          </div>
-        </div>
+        ))}
       </div>
       {/* News */}
       <News />

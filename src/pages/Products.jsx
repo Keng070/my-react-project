@@ -1,20 +1,50 @@
 import { FaCartArrowDown, FaChevronRight } from "react-icons/fa6";
 import News from "../components/News";
 import { FaSortAmountDown } from "react-icons/fa";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { RiCloseLine, RiHeartLine, RiSearch2Line } from "react-icons/ri";
 import Sticky from "react-sticky-el";
-import {useNavigate} from 'react-router-dom'
+import { useNavigate } from "react-router-dom";
+import Loading from "../components/Loading";
 
 const Products = () => {
+  const [loading, setLoading] = useState(false);
   const [filterModal, setFilterModal] = useState(false);
   const [dropDown, setDropDown] = useState(false);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const [productData, setProductData] = useState([]);
+  const api = import.meta.env.VITE_API_URL;
+
+  const getAllProducts = async () => {
+    try {
+      setLoading(true);
+
+      const res = await fetch(`${api}/api/products`, {
+        method: "GET",
+      });
+      if (res.ok) {
+        setLoading(false);
+      } else {
+        console.log(res);
+        setLoading(false);
+      }
+      const data = await res.json();
+      setProductData(data.content);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    getAllProducts();
+  }, []);
   return (
     <div>
       {/* headline */}
 
       <div className="overflow-hidden max-w-[1640px] h-[200px] lg:h-[300px] md:h-[300px] relative m-auto">
+        {loading ? <Loading /> : ""}
+
         <div className="absolute right-0  bottom-0 p-6 bg-gradient-to-r from-custom-blue/0 to-custom-blue/90">
           <p className="text-4xl mb-6 text-white text-shadow">
             New Collections
@@ -340,144 +370,39 @@ const Products = () => {
           {/*All Products */}
           <div className=" w-full flex flex-wrap">
             {/* single product */}
-            <div onClick={()=>navigate('/product-detail')} className="flex-1 hoverer-actions cursor-pointer hover:border-2 min-w-[200px] h-[450px] max-w-[300px] m-1 flex items-center  flex-col">
-              <img
-                className="h-[65%] w-full  object-cover"
-                src="https://images.unsplash.com/photo-1607345366928-199ea26cfe3e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8c2hpcnR8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60"
-                alt=""
-              />
-              <div className="flex flex-col h-[30%] w-full  items-center justify-center bg-white">
-                <p className="font-bold my-1 text-center">
-                  ENGLAND 1990 BLACK-OUT SHIRT BLACK
-                </p>
-                <p className="text-orange-600 text-[20px] mb-2">$ 800</p>
-                {/* Actions */}
-                <div className="flex hovered-actions w-full items-center justify-center">
-                  <button className=" cursor-pointer rounded-full bg-orange-600 hover:bg-white hover:border-orange-600 hover:border-2 duration-500 hover:text-orange-600  p-3 text-white mx-2">
-                    <FaCartArrowDown size={17} />
-                  </button>
-                  <button className="cursor-pointer rounded-full text-[19px] text-custom-blue border-2 duration-500 hover:bg-custom-blue hover:text-white border-custom-blue p-2 py-1 mx-2">
-                    View
-                  </button>
-                  <RiHeartLine className="mx-2 cursor-pointer " size={30} />
+
+            {productData?.map((item, index) => (
+              <div
+                key={index}
+                onClick={() => navigate(`/product/${item._id}`)}
+                className="flex-1 hoverer-actions cursor-pointer hover:border-2 min-w-[200px] h-[450px] max-w-[300px] m-1 flex items-center  flex-col"
+              >
+                <img
+                  className="h-[65%] w-full  object-cover"
+                  src={item.imageUrl}
+                  alt=""
+                />
+                <div className="flex flex-col h-[30%] w-full  items-center justify-center bg-white">
+                  <p className="font-bold my-1 text-center">{item.title}</p>
+                  <p className="text-orange-600 text-[20px] mb-2">
+                    $ {item.price}
+                  </p>
+
+                  <div className="flex hovered-actions w-full items-center justify-center">
+                    <button className=" cursor-pointer rounded-full bg-orange-600 hover:bg-white hover:border-orange-600 hover:border-2 duration-500 hover:text-orange-600  p-3 text-white mx-2">
+                      <FaCartArrowDown size={17} />
+                    </button>
+                    <button
+                      onClick={() => navigate(`/product/${item._id}`)}
+                      className="cursor-pointer rounded-full text-[19px] text-custom-blue border-2 duration-500 hover:bg-custom-blue hover:text-white border-custom-blue p-2 py-1 mx-2"
+                    >
+                      View
+                    </button>
+                    <RiHeartLine className="mx-2 cursor-pointer " size={30} />
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="flex-1 hoverer-actions cursor-pointer hover:border-2 min-w-[200px] h-[450px] max-w-[300px] m-1 flex items-center  flex-col">
-              <img
-                className="h-[65%] w-full  object-cover"
-                src="https://images.unsplash.com/photo-1607345366928-199ea26cfe3e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8c2hpcnR8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60"
-                alt=""
-              />
-              <div className="flex flex-col h-[30%] w-full  items-center justify-center bg-white">
-                <p className="font-bold my-1 text-center">
-                  ENGLAND 1990 BLACK-OUT SHIRT BLACK
-                </p>
-                <p className="text-orange-600 text-[20px] mb-2">$ 800</p>
-                {/* Actions */}
-                <div className="flex hovered-actions w-full items-center justify-center">
-                  <button className=" cursor-pointer rounded-full bg-orange-600 hover:bg-white hover:border-orange-600 hover:border-2 duration-500 hover:text-orange-600  p-3 text-white mx-2">
-                    <FaCartArrowDown size={17} />
-                  </button>
-                  <button className="cursor-pointer rounded-full text-[19px] text-custom-blue border-2 duration-500 hover:bg-custom-blue hover:text-white border-custom-blue p-2 py-1 mx-2">
-                    View
-                  </button>
-                  <RiHeartLine className="mx-2 cursor-pointer " size={30} />
-                </div>
-              </div>
-            </div>{" "}
-            <div className="flex-1 hoverer-actions cursor-pointer hover:border-2 min-w-[200px] h-[450px] max-w-[300px] m-1 flex items-center  flex-col">
-              <img
-                className="h-[65%] w-full  object-cover"
-                src="https://images.unsplash.com/photo-1607345366928-199ea26cfe3e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8c2hpcnR8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60"
-                alt=""
-              />
-              <div className="flex flex-col h-[30%] w-full  items-center justify-center bg-white">
-                <p className="font-bold my-1 text-center">
-                  ENGLAND 1990 BLACK-OUT SHIRT BLACK
-                </p>
-                <p className="text-orange-600 text-[20px] mb-2">$ 800</p>
-                {/* Actions */}
-                <div className="flex hovered-actions w-full items-center justify-center">
-                  <button className=" cursor-pointer rounded-full bg-orange-600 hover:bg-white hover:border-orange-600 hover:border-2 duration-500 hover:text-orange-600  p-3 text-white mx-2">
-                    <FaCartArrowDown size={17} />
-                  </button>
-                  <button className="cursor-pointer rounded-full text-[19px] text-custom-blue border-2 duration-500 hover:bg-custom-blue hover:text-white border-custom-blue p-2 py-1 mx-2">
-                    View
-                  </button>
-                  <RiHeartLine className="mx-2 cursor-pointer " size={30} />
-                </div>
-              </div>
-            </div>{" "}
-            <div className="flex-1 hoverer-actions cursor-pointer hover:border-2 min-w-[200px] h-[450px] max-w-[300px] m-1 flex items-center  flex-col">
-              <img
-                className="h-[65%] w-full  object-cover"
-                src="https://images.unsplash.com/photo-1607345366928-199ea26cfe3e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8c2hpcnR8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60"
-                alt=""
-              />
-              <div className="flex flex-col h-[30%] w-full  items-center justify-center bg-white">
-                <p className="font-bold my-1 text-center">
-                  ENGLAND 1990 BLACK-OUT SHIRT BLACK
-                </p>
-                <p className="text-orange-600 text-[20px] mb-2">$ 800</p>
-                {/* Actions */}
-                <div className="flex hovered-actions w-full items-center justify-center">
-                  <button className=" cursor-pointer rounded-full bg-orange-600 hover:bg-white hover:border-orange-600 hover:border-2 duration-500 hover:text-orange-600  p-3 text-white mx-2">
-                    <FaCartArrowDown size={17} />
-                  </button>
-                  <button className="cursor-pointer rounded-full text-[19px] text-custom-blue border-2 duration-500 hover:bg-custom-blue hover:text-white border-custom-blue p-2 py-1 mx-2">
-                    View
-                  </button>
-                  <RiHeartLine className="mx-2 cursor-pointer " size={30} />
-                </div>
-              </div>
-            </div>{" "}
-            <div className="flex-1 hoverer-actions cursor-pointer hover:border-2 min-w-[200px] h-[450px] max-w-[300px] m-1 flex items-center  flex-col">
-              <img
-                className="h-[65%] w-full  object-cover"
-                src="https://images.unsplash.com/photo-1607345366928-199ea26cfe3e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8c2hpcnR8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60"
-                alt=""
-              />
-              <div className="flex flex-col h-[30%] w-full  items-center justify-center bg-white">
-                <p className="font-bold my-1 text-center">
-                  ENGLAND 1990 BLACK-OUT SHIRT BLACK
-                </p>
-                <p className="text-orange-600 text-[20px] mb-2">$ 800</p>
-                {/* Actions */}
-                <div className="flex hovered-actions w-full items-center justify-center">
-                  <button className=" cursor-pointer rounded-full bg-orange-600 hover:bg-white hover:border-orange-600 hover:border-2 duration-500 hover:text-orange-600  p-3 text-white mx-2">
-                    <FaCartArrowDown size={17} />
-                  </button>
-                  <button className="cursor-pointer rounded-full text-[19px] text-custom-blue border-2 duration-500 hover:bg-custom-blue hover:text-white border-custom-blue p-2 py-1 mx-2">
-                    View
-                  </button>
-                  <RiHeartLine className="mx-2 cursor-pointer " size={30} />
-                </div>
-              </div>
-            </div>{" "}
-            <div className="flex-1 hoverer-actions cursor-pointer hover:border-2 min-w-[200px] h-[450px] max-w-[300px] m-1 flex items-center  flex-col">
-              <img
-                className="h-[65%] w-full  object-cover"
-                src="https://images.unsplash.com/photo-1607345366928-199ea26cfe3e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8c2hpcnR8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60"
-                alt=""
-              />
-              <div className="flex flex-col h-[30%] w-full  items-center justify-center bg-white">
-                <p className="font-bold my-1 text-center">
-                  ENGLAND 1990 BLACK-OUT SHIRT BLACK
-                </p>
-                <p className="text-orange-600 text-[20px] mb-2">$ 800</p>
-                {/* Actions */}
-                <div className="flex hovered-actions w-full items-center justify-center">
-                  <button className=" cursor-pointer rounded-full bg-orange-600 hover:bg-white hover:border-orange-600 hover:border-2 duration-500 hover:text-orange-600  p-3 text-white mx-2">
-                    <FaCartArrowDown size={17} />
-                  </button>
-                  <button className="cursor-pointer rounded-full text-[19px] text-custom-blue border-2 duration-500 hover:bg-custom-blue hover:text-white border-custom-blue p-2 py-1 mx-2">
-                    View
-                  </button>
-                  <RiHeartLine className="mx-2 cursor-pointer " size={30} />
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>

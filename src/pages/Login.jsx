@@ -90,7 +90,7 @@ const Login = () => {
         pauseOnHover
         theme="light"
       />
-      <div className="w-full h-full flex items-center justify-center backdrop-blur-md bg-black/40">
+      <div className="w-full h-full flex items-center justify-center backdrop-blur-lg bg-black/40">
         <div className="flex bg-white custom-box-shadow">
           <form
             onSubmit={handleSubmit}
