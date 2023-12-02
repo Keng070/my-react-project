@@ -21,7 +21,7 @@ import {
 import { GrUser, GrUserFemale } from "react-icons/gr";
 import myImages from "../assets/images/weblogo.png";
 import { Link } from "react-router-dom";
-import { FaChevronRight } from "react-icons/fa6";
+import { FaChevronRight, FaLeaf } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import Loading from "../components/Loading";
 import { ToastContainer, toast } from "react-toastify";
@@ -32,6 +32,7 @@ const Header = () => {
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [openCart, setOpenCart] = useState(false);
   const [userData, setUserData] = useState([]);
+  const [userCart, setUserCart] = useState({});
   const [loading, setLoading] = useState(false);
 
   const api = import.meta.env.VITE_API_URL;
@@ -96,12 +97,40 @@ const Header = () => {
     setIsInputFocused(false);
   };
 
+  const getUserCart = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${api}/api/cart`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        setLoading(false);
+      } else {
+        setLoading(false);
+      }
+      const data = await res.json();
+      if (data) {
+        setUserCart(data);
+        setLoading(false);
+      } else {
+        wariningPopUp(data.error);
+        setLoading(false);
+      }
+    } catch (error) {
+      wariningPopUp(error);
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
     if (!token) {
       ("");
     } else {
       getUserProfile();
+      setLoading(false);
     }
+    getUserCart();
   }, [token]);
   return (
     <div className="  bg-white w-full mx-auto  justify-between lg:justify-around fixed top-0 z-30 flex  p-2 lg:p-2 shadow-md">
@@ -282,10 +311,13 @@ const Header = () => {
         <div className="flex relative  mx-5 items-center justify-center ">
           <button
             onClick={() => setOpenCart(true)}
-            className="bg-orange-600  duration-300 text-white  p-3 items-center
+            className="bg-orange-600 relative  duration-300 text-white  p-3 items-center
     rounded-full hover:bg-white border  hover:border-orange-600 hover:text-orange-600"
           >
-            <RiShoppingCart2Line size={25} />
+            <RiShoppingCart2Line size={25} />{" "}
+            <p className="absolute top-0 right-[-10px] border-2 border-white bg-red-600  rounded-full w-[25px] h-[25px]">
+              {userCart.totalItem}
+            </p>
           </button>
 
           {/* Cart Items */}
@@ -307,58 +339,26 @@ const Header = () => {
               {/* all items */}
               <div className="w-full ">
                 {/* an items */}
-                <div className="w-full mb-2 flex items-center ">
-                  {/* Image */}
-                  <div className="h-[100px] w-[150px] overflow-hidden">
-                    <img
-                      className="w-full h-full object-cover"
-                      src="https://images.unsplash.com/photo-1607345366928-199ea26cfe3e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8c2hpcnR8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60"
-                      alt=""
-                    />
-                  </div>
+                {userCart?.cartItems?.map((item, index) => (
+                  <div key={index} className="w-full mb-2 flex items-center ">
+                    {/* Image */}
+                    <div className="h-[100px] w-[150px] overflow-hidden">
+                      <img
+                        className="w-full h-full object-cover"
+                        src={item?.product?.imageUrl}
+                        alt=""
+                      />
+                    </div>
 
-                  {/* desc */}
-                  <div className="mx-2">
-                    <p className="font-bold">TSTM Unisex Premium Limited</p>
-                    <p className="text-orange-600">$ 800</p>
+                    {/* desc */}
+                    <div className="mx-2">
+                      <p className="font-bold">{item?.product?.title}</p>
+                      <p className="text-orange-600">$ {item?.price}</p>
+                    </div>
                   </div>
-                </div>
+                ))}
                 <hr />
-                {/* an items */}
-                <div className="w-full mb-2 flex items-center ">
-                  {/* Image */}
-                  <div className="h-[100px] w-[150px] overflow-hidden">
-                    <img
-                      className="w-full h-full object-cover"
-                      src="https://images.unsplash.com/photo-1607345366928-199ea26cfe3e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8c2hpcnR8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60"
-                      alt=""
-                    />
-                  </div>
 
-                  {/* desc */}
-                  <div className="mx-2">
-                    <p className="font-bold">TSTM Unisex Premium Limited</p>
-                    <p className="text-orange-600">$ 800</p>
-                  </div>
-                </div>
-                <hr />
-                {/* an items */}
-                <div className="w-full mb-2 flex items-center ">
-                  {/* Image */}
-                  <div className="h-[100px] w-[150px] overflow-hidden">
-                    <img
-                      className="w-full h-full object-cover"
-                      src="https://images.unsplash.com/photo-1607345366928-199ea26cfe3e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8c2hpcnR8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60"
-                      alt=""
-                    />
-                  </div>
-
-                  {/* desc */}
-                  <div className="mx-2">
-                    <p className="font-bold">TSTM Unisex Premium Limited</p>
-                    <p className="text-orange-600">$ 800</p>
-                  </div>
-                </div>
                 <hr />
               </div>
 

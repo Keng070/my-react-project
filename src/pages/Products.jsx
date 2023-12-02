@@ -6,15 +6,43 @@ import { RiCloseLine, RiHeartLine, RiSearch2Line } from "react-icons/ri";
 import Sticky from "react-sticky-el";
 import { useNavigate } from "react-router-dom";
 import Loading from "../components/Loading";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Products = () => {
   const [loading, setLoading] = useState(false);
   const [filterModal, setFilterModal] = useState(false);
   const [dropDown, setDropDown] = useState(false);
-  const navigate = useNavigate();
   const [productData, setProductData] = useState([]);
-  const api = import.meta.env.VITE_API_URL;
+  
+  const navigate = useNavigate();
 
+  const api = import.meta.env.VITE_API_URL;
+  const token = localStorage.getItem("user");
+  const successPopUp = (reason) => {
+    toast.success(`${reason}`, {
+      position: "top-left",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+  };
+  const wariningPopUp = (reason) => {
+    toast.warn(`${reason}`, {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+  };
   const getAllProducts = async () => {
     try {
       setLoading(true);
@@ -35,16 +63,62 @@ const Products = () => {
       setLoading(false);
     }
   };
+  const addToCart = async (productId, size) => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${api}/api/cart/add`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          productId: productId,
+          size: size,
+        }),
+      });
+      if (res.ok) {
+        setLoading(false);
+      } else {
+        setLoading(false);
+      }
+      const data = await res.json();
+      if (data) {
+        setLoading(false);
+        successPopUp(data.message);
+      } else {
+        wariningPopUp(data.error);
+        setLoading(false);
+      }
+    } catch (error) {
+      wariningPopUp(error);
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
     getAllProducts();
   }, []);
+
+
   return (
     <div>
       {/* headline */}
 
       <div className="overflow-hidden max-w-[1640px] h-[200px] lg:h-[300px] md:h-[300px] relative m-auto">
         {loading ? <Loading /> : ""}
-
+        <ToastContainer
+          position="top-left"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
         <div className="absolute right-0  bottom-0 p-6 bg-gradient-to-r from-custom-blue/0 to-custom-blue/90">
           <p className="text-4xl mb-6 text-white text-shadow">
             New Collections
@@ -240,14 +314,14 @@ const Products = () => {
               <RiSearch2Line size={30} />
             </button>
             <input
-              type="text"
+                type="text"
               className="border-none flex-1 px-4 outline-none bg-black/0"
               placeholder="Search"
             />
           </form>
           <p className="ml-10 hidden md:flex lg:flex"> Results:</p>
         </div>
-
+v
         {/* Product */}
         <div className="flex justify-between w-full">
           {/* menu */}
@@ -374,10 +448,10 @@ const Products = () => {
             {productData?.map((item, index) => (
               <div
                 key={index}
-                onClick={() => navigate(`/product/${item._id}`)}
                 className="flex-1 hoverer-actions cursor-pointer hover:border-2 min-w-[200px] h-[450px] max-w-[300px] m-1 flex items-center  flex-col"
               >
                 <img
+                  onClick={() => navigate(`/product/${item._id}`)}
                   className="h-[65%] w-full  object-cover"
                   src={item.imageUrl}
                   alt=""
@@ -389,7 +463,10 @@ const Products = () => {
                   </p>
 
                   <div className="flex hovered-actions w-full items-center justify-center">
-                    <button className=" cursor-pointer rounded-full bg-orange-600 hover:bg-white hover:border-orange-600 hover:border-2 duration-500 hover:text-orange-600  p-3 text-white mx-2">
+                    <button
+                      onClick={() => addToCart(item._id, item.sizes[0].name)}
+                      className=" cursor-pointer rounded-full bg-orange-600 hover:bg-white hover:border-orange-600 hover:border-2 duration-500 hover:text-orange-600  p-3 text-white mx-2"
+                    >
                       <FaCartArrowDown size={17} />
                     </button>
                     <button

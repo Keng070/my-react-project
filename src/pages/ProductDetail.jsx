@@ -6,13 +6,42 @@ import { useNavigate, useParams } from "react-router-dom";
 import News from "../components/News";
 import { useEffect, useState } from "react";
 import Loading from "../components/Loading";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const ProductDetail = () => {
   const [loading, setLoading] = useState(false);
   const [productData, setProductData] = useState({});
   const [relatedProducts, setRelatedProducts] = useState([]);
+  const [productSize, setProductSize] = useState("");
+  const [productSizeCheck, setProductSizeCheck] = useState(false);
   const navigate = useNavigate();
   const productId = useParams();
   const api = import.meta.env.VITE_API_URL;
+  const token = localStorage.getItem("user");
+  const successPopUp = (reason) => {
+    toast.success(`${reason}`, {
+      position: "top-left",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+  };
+  const wariningPopUp = (reason) => {
+    toast.warn(`${reason}`, {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+  };
 
   const getTheProduct = async () => {
     try {
@@ -58,18 +87,65 @@ const ProductDetail = () => {
       setLoading(false);
     }
   };
- 
+  const addToCart = async (productId) => {
+    try {
+      setProductSizeCheck(true);
+      setLoading(true);
+      const res = await fetch(`${api}/api/cart/add`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          productId: productId,
+          size: productSize,
+        }),
+      });
+      if (res.ok) {
+        setLoading(false);
+      } else {
+        setLoading(false);
+      }
+      const data = await res.json();
+      if (data) {
+        setLoading(false);
+        successPopUp(data.message);
+      } else {
+        wariningPopUp(data.error);
+        setLoading(false);
+      }
+    } catch (error) {
+      wariningPopUp(error);
+      console.log(error);
+    }
+  };
   useEffect(() => {
     getRelatedProducts();
     getTheProduct();
-    if(relatedProducts){
-      setLoading(false)
+    if (relatedProducts) {
+      setLoading(false);
     }
-  }, [relatedProducts]);
-   return (
+    if (productSizeCheck) {
+      console.log(productSize);
+    }
+  }, [relatedProducts, productSizeCheck]);
+
+  return (
     <div className="max-w-[1640px]  m-auto">
       {loading ? <Loading /> : ""}
-
+      <ToastContainer
+        position="top-left"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       {/* The product */}
       <div className=" md:pt-[150px] md:px-16 lg:px-16  lg:pt-[150px] pt-[50px] flex w-full flex-wrap">
         {/* image */}
@@ -94,7 +170,12 @@ const ProductDetail = () => {
           <p className="text-2xl md:text-2xl lg:text-2xl text-orange-600 mb-6">
             $ {productData.price}
           </p>
-          <select className="w-[100px] border-2 p-2 mb-4" name="" id="">
+          <select
+            onChange={(e) => setProductSize(e.target.value)}
+            className="w-[100px] border-2 p-2 mb-4"
+            name=""
+            id=""
+          >
             <option value="Sizes" disabled selected>
               Sizes
             </option>
@@ -110,7 +191,10 @@ const ProductDetail = () => {
               type="number"
               defaultValue={1}
             />
-            <button className="text-[15px] mx-2 font-bold p-[12px] hover:bg-white duration-500 hover:text-orange-600 hover:border-2 border-orange-600 bg-orange-600 text-white">
+            <button
+              onClick={() => addToCart(productData._id)}
+              className="text-[15px] mx-2 font-bold p-[12px] hover:bg-white duration-500 hover:text-orange-600 hover:border-2 border-orange-600 bg-orange-600 text-white"
+            >
               Add to cart
             </button>
             <RiHeartLine className="cursor-pointer" size={30} />
