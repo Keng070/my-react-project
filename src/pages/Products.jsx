@@ -14,11 +14,13 @@ const Products = () => {
   const [filterModal, setFilterModal] = useState(false);
   const [dropDown, setDropDown] = useState(false);
   const [productData, setProductData] = useState([]);
-  
+  const [searchTerm, setSearchTerm] = useState("");
+  const [pages, setPages] = useState(1);
+  const [curentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
-
   const api = import.meta.env.VITE_API_URL;
   const token = localStorage.getItem("user");
+
   const successPopUp = (reason) => {
     toast.success(`${reason}`, {
       position: "top-left",
@@ -43,11 +45,10 @@ const Products = () => {
       theme: "light",
     });
   };
-  const getAllProducts = async () => {
+  const getAllProducts = async (page) => {
     try {
       setLoading(true);
-
-      const res = await fetch(`${api}/api/products`, {
+      const res = await fetch(`${api}/api/products?pageNumber=${page}`, {
         method: "GET",
       });
       if (res.ok) {
@@ -58,6 +59,7 @@ const Products = () => {
       }
       const data = await res.json();
       setProductData(data.content);
+      setPages(data);
     } catch (error) {
       console.log(error);
       setLoading(false);
@@ -95,13 +97,17 @@ const Products = () => {
       console.log(error);
     }
   };
-
   useEffect(() => {
-    getAllProducts();
-  }, []);
-
-
-  return (
+    getAllProducts(curentPage);
+    if (curentPage) {
+      //ok
+    }
+  }, [curentPage]);
+  const pageNumbers = [];
+  for (let i = 1; i <= pages.totalPages; i++) {
+    pageNumbers.push(i);
+  }
+   return (
     <div>
       {/* headline */}
 
@@ -314,14 +320,15 @@ const Products = () => {
               <RiSearch2Line size={30} />
             </button>
             <input
-                type="text"
+              onChange={(e) => setSearchTerm(e.target.value)}
+              type="text"
               className="border-none flex-1 px-4 outline-none bg-black/0"
               placeholder="Search"
             />
           </form>
           <p className="ml-10 hidden md:flex lg:flex"> Results:</p>
         </div>
-v
+
         {/* Product */}
         <div className="flex justify-between w-full">
           {/* menu */}
@@ -445,42 +452,70 @@ v
           <div className=" w-full flex flex-wrap">
             {/* single product */}
 
-            {productData?.map((item, index) => (
-              <div
-                key={index}
-                className="flex-1 hoverer-actions cursor-pointer hover:border-2 min-w-[200px] h-[450px] max-w-[300px] m-1 flex items-center  flex-col"
-              >
-                <img
-                  onClick={() => navigate(`/product/${item._id}`)}
-                  className="h-[65%] w-full  object-cover"
-                  src={item.imageUrl}
-                  alt=""
-                />
-                <div className="flex flex-col h-[30%] w-full  items-center justify-center bg-white">
-                  <p className="font-bold my-1 text-center">{item.title}</p>
-                  <p className="text-orange-600 text-[20px] mb-2">
-                    $ {item.price}
-                  </p>
+            {productData
+              ?.filter((val) => {
+                if (searchTerm == "") {
+                  return val;
+                } else if (
+                  val.title.toLowerCase().includes(searchTerm.toLowerCase())
+                ) {
+                  return val;
+                }
+              })
+              ?.map((item, index) => (
+                <div
+                  key={index}
+                  className="flex-1 hoverer-actions cursor-pointer hover:border-2 min-w-[200px] h-[450px] max-w-[300px] m-1 flex items-center  flex-col"
+                >
+                  <img
+                    onClick={() => navigate(`/product/${item._id}`)}
+                    className="h-[65%] w-full  object-cover"
+                    src={item.imageUrl}
+                    alt=""
+                  />
+                  <div className="flex flex-col h-[30%] w-full  items-center justify-center bg-white">
+                    <p className="font-bold my-1 bg-white text-center">
+                      {item.title}
+                    </p>
+                    <p className="text-orange-600 text-[20px] mb-2">
+                      $ {item.price}
+                    </p>
 
-                  <div className="flex hovered-actions w-full items-center justify-center">
-                    <button
-                      onClick={() => addToCart(item._id, item.sizes[0].name)}
-                      className=" cursor-pointer rounded-full bg-orange-600 hover:bg-white hover:border-orange-600 hover:border-2 duration-500 hover:text-orange-600  p-3 text-white mx-2"
-                    >
-                      <FaCartArrowDown size={17} />
-                    </button>
-                    <button
-                      onClick={() => navigate(`/product/${item._id}`)}
-                      className="cursor-pointer rounded-full text-[19px] text-custom-blue border-2 duration-500 hover:bg-custom-blue hover:text-white border-custom-blue p-2 py-1 mx-2"
-                    >
-                      View
-                    </button>
-                    <RiHeartLine className="mx-2 cursor-pointer " size={30} />
+                    <div className="flex hovered-actions w-full items-center justify-center">
+                      <button
+                        onClick={() => addToCart(item._id, item.sizes[0].name)}
+                        className=" cursor-pointer rounded-full bg-orange-600 hover:bg-white hover:border-orange-600 hover:border-2 duration-500 hover:text-orange-600  p-3 text-white mx-2"
+                      >
+                        <FaCartArrowDown size={17} />
+                      </button>
+                      <button
+                        onClick={() => navigate(`/product/${item._id}`)}
+                        className="cursor-pointer rounded-full text-[19px] text-custom-blue border-2 duration-500 hover:bg-custom-blue hover:text-white border-custom-blue p-2 py-1 mx-2"
+                      >
+                        View
+                      </button>
+                      <RiHeartLine className="mx-2 cursor-pointer " size={30} />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
+        </div>
+        {/* Pagination */}
+        <div className="w-full flex items-center my-[50px] justify-end ">
+          {pageNumbers.map((pageNumber) => (
+            <button
+              key={pageNumber}
+              onClick={() => setCurrentPage(pageNumber)}
+              className={
+                pageNumber == curentPage
+                  ? "text-white cursor-pointer bg-custom-blue text-lg px-[14px] p-[7px]"
+                  : "bg-custom-white cursor-pointer border-[1px] text-lg px-[14px] p-[7px] text-custom-blue"
+              }
+            >
+              {pageNumber}
+            </button>
+          ))}
         </div>
       </div>
       <News />
